@@ -1,20 +1,20 @@
 <?php
-if(isset($_REQUEST['dns']))
-	$dns = $_REQUEST['dns'];
 
-if(isset($_REQUEST['name']))
-	$dns = $_REQUEST['name'];
+// Cloudflare
+#$dns_server = 'https://cloudflare-dns.com/dns-query';
+// Google
+#$dns_server = 'https://dns.google/dns-query';
+// Adguard accept dns parameter
+$dns_server = 'https://dns.adguard.com/dns-query';
 
-if(empty($dns)){
-    header('HTTP/1.0 404 Not Found');
-    die('DNS Not found');
-}
-$result = gethostbynamel($dns);
-//print_r($result);
-$data = array();
-$data['Status'] = 0;
-$data['Question'] = ['name'=>$dns,'type'=>1];
-foreach($result as $ip){
-	$data['Answer'][] = ['name'=>$dns,'type'=>1,'TTL'=>300,'data'=>$ip];
-}
-echo json_encode($data);
+header('Content-Type: '.$_SERVER['HTTP_ACCEPT']);
+
+$opts = [
+    'http' => [
+        'method' => 'GET',
+        'header' => 'Accept: '.$_SERVER['HTTP_ACCEPT']
+    ]
+];
+$context = stream_context_create($opts);
+
+echo file_get_contents($dns_server . '?'.$_SERVER['QUERY_STRING'], false, $context);
